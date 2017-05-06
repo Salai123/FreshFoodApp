@@ -100,8 +100,14 @@ func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string)
                    cust.Item  = args[1]
                    cust.Quantity = args[2]
                    cust.Cost =args[3]
-
+                    
+                     
+                    
+                   
                   custAsBytes,_  :=  json.Marshal(cust) 
+                  
+                  
+                 
 
                    err = stub.PutState(cust.Invno, custAsBytes)
 
@@ -112,10 +118,11 @@ func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string)
                     }
 	return nil, nil
 }
-// Create RetailerDB
+// CreateRetailerDB
 func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
+                  var retailkey string
 	
 
 	if len(args) != 5 {
@@ -129,10 +136,12 @@ func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, arg
                    retail.Itemid = args[2]
                    retail.Distid = args[3]
                    retail.PurchDate = args[4]
+                   
+                retailkey = retail.Invno + retail.Item
 
                   retailAsBytes,_  :=  json.Marshal(retail) 
 
-                   err = stub.PutState(retail.Invno, retailAsBytes)
+                   err = stub.PutState(retailkey, retailAsBytes)
 
                    if err != nil {
 			
@@ -143,25 +152,33 @@ func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, arg
 }
 // read - query function to read key/value pair
 func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,) ([]byte,error) {
-	var key,jsonResp string
+	var key,key2,jsonResp string
 	var err error                    
 	if len(args) != 1 {
 		return nil,errors.New("Incorrect number of arguments. Expecting name of the key to query")
 	}
 
-                  var retail Retailer
-                  retail.ObjectType  = "retailer_detail"
-	retail.Invno = args[0]
+                  var cust Customer
+                  
+          
+	key = args[0]
                                      
                 
-	valuex,err := stub.GetState(retail.Invno)
-                 
+	valuex,err := stub.GetState(key)
+
+                  json.Unmarshal(valuex,&cust)
+
+                 key2 = cust.Invno + cust.Item 
+
+                 valuey,err := stub.GetState(key2)
+
+               
           
 	if err != nil {
 		jsonResp = "{\"Error\":\"Failed to get state for " + key+ "\"}"
 		return nil, errors.New(jsonResp)
 	}
                           
-	return valuex,nil
+	return valuey,nil
                              
 }
