@@ -60,13 +60,25 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 	return nil, errors.New("Received unknown function invocation: " + function)
 }
+// Query is our entry point for queries
+func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
+	fmt.Println("query is running " + function)
+
+	// Handle different functions
+	if function == "read" { //read a variable
+		return t.read(stub, args)
+	}
+	fmt.Println("query did not find func: " + function)
+
+	return nil, errors.New("Received unknown function query: " + function)
+}
 // write - invoke function to write key/value pair
 func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
 	fmt.Println("running write()")
 
-	if len(args) != 2 {
+	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
 	}
                    
@@ -88,18 +100,6 @@ func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string)
                     }
 	return nil, nil
 }
-// Query is our entry point for queries
-func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
-	fmt.Println("query is running " + function)
-
-	// Handle different functions
-	if function == "read" { //read a variable
-		return t.read(stub, args)
-	}
-	fmt.Println("query did not find func: " + function)
-
-	return nil, errors.New("Received unknown function query: " + function)
-}
 // read - query function to read key/value pair
 func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,) ([]byte,error) {
 	var key,jsonResp string
@@ -109,14 +109,10 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,)
 	}
 
 	key = args[0]
-                       
-                  
+                                     
                 
 	valuex,err := stub.GetState(key)
-            
-                  
-
-         
+                 
           
 	if err != nil {
 		jsonResp = "{\"Error\":\"Failed to get state for " + key+ "\"}"
