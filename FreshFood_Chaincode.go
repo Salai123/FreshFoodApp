@@ -16,13 +16,23 @@ type SimpleChaincode struct {
 // ============================================================================================================================
 //  Customer Definitions
 // ============================================================================================================================
- 
 type Customer struct {
 	ObjectType string        `json:"docType"` //field for couchdb
 	Invno           string          `json:"invno"`      //the fieldtags are needed to keep case from bouncing around
 	Item             string          `json:"item"`
 	Quantity      string               `json:"quantity"`    //size in mm of marble
 	 Cost           string                `json:"cost"`  
+}
+// ============================================================================================================================
+//  Retailer Definitions
+// ============================================================================================================================
+type Retailer struct {
+	ObjectType string        `json:"docType"` //field for couchdb
+	Invno           string          `json:"invno"`      //the fieldtags are needed to keep case from bouncing around
+	Item             string          `json:"item"`
+                  Itemid          string          `json:"itemid"`
+	Distid          string           `json:"distid"`     
+	PurchDate   string           `json:"PurchDate"`  
 }
 // ============================================================================================================================
 // Main
@@ -55,6 +65,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.Init(stub, "init", args)
 	} else if function == "write" {
 		return t.write(stub, args)
+                  } else if function == "CreateRetailerDB" {
+		return t.CreateRetailerDB(stub, args)
 	}
 	fmt.Println("invoke did not find func: " + function)
 
@@ -100,6 +112,35 @@ func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string)
                     }
 	return nil, nil
 }
+// Create RetailerDB
+func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+	
+
+	if len(args) != 5 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
+	}
+                   
+                   var retail Retailer
+                   retail.ObjectType  = "retailer_detail"
+                   retail.Invno  = args[0]
+                   retail.Item  = args[1]
+                   retail.Itemid = args[2]
+                   retail.Distid = args[3]
+                   retail.PurchDate = args[4]
+
+                  retailAsBytes,_  :=  json.Marshal(retail) 
+
+                   err = stub.PutState(retail.Invno, retailAsBytes)
+
+                   if err != nil {
+			
+                    return nil, err
+	
+                    }
+	return nil, nil
+}
 // read - query function to read key/value pair
 func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,) ([]byte,error) {
 	var key,jsonResp string
@@ -108,10 +149,12 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,)
 		return nil,errors.New("Incorrect number of arguments. Expecting name of the key to query")
 	}
 
-	key = args[0]
+                  var retail Retailer
+                  retail.ObjectType  = "retailer_detail"
+	retail.Invno = args[0]
                                      
                 
-	valuex,err := stub.GetState(key)
+	valuex,err := stub.GetState(retail.Invno)
                  
           
 	if err != nil {
