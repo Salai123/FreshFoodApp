@@ -386,6 +386,6 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,)
           
 	
                           
-	return resAsBytes,nil
+	return valuezz,nil
                              
 }
