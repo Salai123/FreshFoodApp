@@ -14,6 +14,8 @@ import (
 type SimpleChaincode struct {
 }
 
+type Date struct{ time.Time }
+
 // ============================================================================================================================
 //  Response Definitions
 // ============================================================================================================================
@@ -62,7 +64,7 @@ type Manufacturer struct {
                   Itemid          string          `json:"itemid"`
                   ManDate      string           `jason:"mandate"`
 	Quality         string           `json:"quality"`     
-	Ndays          string           `json:"ndays"`  
+	Ndays          int           `json:"ndays"`  
                   SellDate     string             `json:"selldate"`
                   Distid          string           `json:"Distid"`
 }
@@ -208,8 +210,9 @@ func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, arg
 func (t *SimpleChaincode) CreateDistributorDB(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
+                  var key string
                   
-	
+	var manud Manufacturer
 
 	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
@@ -221,14 +224,28 @@ func (t *SimpleChaincode) CreateDistributorDB(stub shim.ChaincodeStubInterface, 
                    dist.Item  = args[1]
                    dist.Manid = args[2]
                    dist.Retid = args[3]
+                       
+                   dist.DPurchDate = "2017-05-10 15:04:05"
 
               
+                      key = dist.Manid + dist.Distid+dist.Item+dist.DPurchDate
 
-                   dist.ExpDate =  "2017-05-17 15:04:05"
 
-                
+                   valuezi,err := stub.GetState(key)
+                   json.Unmarshal(valuezi,&manud)
 
-                   dist.DPurchDate = "2017-05-10 15:04:05"
+                  tt,err := time.Parse("2017-01-31",manud.ManDate)
+
+                 
+
+                   et  := tt.AddDate(0,0,manud.Ndays)
+
+                    dist.ExpDate = et.String()
+             
+                   
+                     
+
+                   
 
                     dist.SellDate = "2017-05-12 15:04:05"
                    
@@ -271,17 +288,18 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                    manf.Item = "Default"
                    }
 
-                   c := time.Now().Local()
+                   
 
-                   manf.ManDate =  c.String()
+                    c :=  time.Now().Local()
+                   manf.ManDate = c.String()
                    manf.Quality = args[2]
                    
                     if manf.Quality ==  "A" {
-                   manf.Ndays  = "10"
+                   manf.Ndays  = 10
                    } else if manf.Quality == "B" {
-                    manf.Ndays = "7"
+                    manf.Ndays = 7
                    } else  {
-                   manf.Ndays = "5"
+                   manf.Ndays = 5
                    }
                    
                  manf.Distid = args[3]
