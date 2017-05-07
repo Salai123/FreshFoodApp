@@ -173,7 +173,7 @@ func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string)
                     return nil, err
 	
                     }
-	return nil, nil
+	return custAsBytes, nil
 }
 // CreateRetailerDB
 func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -205,7 +205,7 @@ func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, arg
                     return nil, err
 	
                     }
-	return nil, nil
+	return retailAsBytes, nil
 }
 // CreateDistributorDB
 func (t *SimpleChaincode) CreateDistributorDB(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -260,7 +260,7 @@ func (t *SimpleChaincode) CreateDistributorDB(stub shim.ChaincodeStubInterface, 
                     return nil, err
 	
                     }
-	return nil, nil
+	return distAsBytes, nil
 }
 
 // CreateManDB
@@ -316,7 +316,7 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                     return nil, err
 	
                     }
-	return nil, nil
+	return manfAsBytes, nil
 }
 // read - query function to read key/value pair
 func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,) ([]byte,error) {
