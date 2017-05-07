@@ -323,6 +323,10 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,)
                                      
                 
 	valuex,err := stub.GetState(key)
+                   if err != nil {
+		jsonResp = "{\"Error\":\"Failed to get state for " + key+ "\"}"
+		return nil, errors.New(jsonResp)
+	}
 
                   json.Unmarshal(valuex,&custr)
  
@@ -363,10 +367,7 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,)
 
                    err = stub.PutState(response.Invno+response.ManDate, resAsBytes)
           
-	if err != nil {
-		jsonResp = "{\"Error\":\"Failed to get state for " + key+ "\"}"
-		return nil, errors.New(jsonResp)
-	}
+	
                           
 	return resAsBytes,nil
                              
