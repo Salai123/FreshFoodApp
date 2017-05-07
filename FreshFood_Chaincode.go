@@ -200,7 +200,7 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                    manf.ManDate =  c.String()
                    manf.Quality = args[1]
                    
-                    if manf.Quality==  "A" {
+                    if manf.Quality ==  "A" {
                    manf.Ndays  = "10"
                    } else if manf.Quality == "B" {
                     manf.Ndays = "7"
@@ -210,7 +210,7 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                    
                  
                    
-                mankey = manf.Manid + manf.Item
+                mankey = manf.Manid + manf.Itemid
 
                   manfAsBytes,_  :=  json.Marshal(manf) 
 
