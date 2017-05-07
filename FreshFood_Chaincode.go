@@ -18,18 +18,17 @@ type SimpleChaincode struct {
 //  Response Definitions
 // ============================================================================================================================
 type Response struct {
-	ObjectType string        `json:"docType"` //field for couchdb
-                   Invno           string          `json:"invno"`      //the fieldtags are needed to keep case from bouncing around
-                   Itemid          string          `json:"itemid"`
-	 Item             string          `json:"item"`
-                   Retid          string           `json:"retid"`     
-                   PurchDate   string           `json:"PurchDate"`       
-	 Distid          string           `json:"distid"`     
-                   DPurchDate   string           `json:"dpurchdate"`  
-	 ExpDate      string           `jason:"expdate"`	
-                  Manid         string          `jason:"manid"`
-                  ManDate      string           `jason:"mandate"`
-	Quality         string           `json:"quality"`     	 
+	ObjectType string        `json:"Response"` //field for couchdb
+                   Invno           string          `json:"Invoice No"`      //the fieldtags are needed to keep case from bouncing around
+	 Item             string          `json:"Item"`
+                   Retid          string           `json:"Retailer id "`     
+                   PurchDate   string           `json:"Retailer Purchase Date"`       
+	 Distid          string           `json:"Distributor Id"`     
+                   DPurchDate   string           `json:"Distributor Purchase Date"`  
+	 ExpDate      string           `jason:"Expiry Date"`	
+                  Manid         string          `jason:"Manufacturer id"`
+                  ManDate      string           `jason:"Manufacture Date"`
+	Quality         string           `json:"Quality"`     	 
 }
 // ============================================================================================================================
 //  Customer Definitions
@@ -253,14 +252,14 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                   var mankey string
 	
 
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
 	}
                    
                    var manf Manufacturer
                    manf.ObjectType  = "Manufacturer_detail"
-                   manf.Manid = "M001"
-                   manf.Itemid = args[0]
+                   manf.Manid = args[0]
+                   manf.Itemid = args[1]
 
                    manf.SellDate = "2017-05-10 15:04:05"
 
@@ -275,7 +274,7 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                    c := time.Now().Local()
 
                    manf.ManDate =  c.String()
-                   manf.Quality = args[1]
+                   manf.Quality = args[2]
                    
                     if manf.Quality ==  "A" {
                    manf.Ndays  = "10"
@@ -285,7 +284,7 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                    manf.Ndays = "5"
                    }
                    
-                 manf.Distid = args[2]
+                 manf.Distid = args[3]
                    
                 mankey = manf.Manid + manf.Distid+manf.Item+manf.SellDate
 
