@@ -15,6 +15,23 @@ type SimpleChaincode struct {
 }
 
 // ============================================================================================================================
+//  Response Definitions
+// ============================================================================================================================
+type Response struct {
+	ObjectType string        `json:"docType"` //field for couchdb
+                   Invno           string          `json:"invno"`      //the fieldtags are needed to keep case from bouncing around
+                   Itemid          string          `json:"itemid"`
+	 Item             string          `json:"item"`
+                   Retid          string           `json:"retid"`     
+                   PurchDate   string           `json:"PurchDate"`       
+	 Distid          string           `json:"distid"`     
+                   DPurchDate   string           `json:"dpurchdate"`  
+	 ExpDate      string           `jason:"expdate"`	
+                  Manid         string          `jason:"manid"`
+                  ManDate      string           `jason:"mandate"`
+	Quality         string           `json:"quality"`     	 
+}
+// ============================================================================================================================
 //  Customer Definitions
 // ============================================================================================================================
 type Customer struct {
@@ -31,9 +48,9 @@ type Retailer struct {
 	ObjectType string        `json:"docType"` //field for couchdb
 	Invno           string          `json:"invno"`      //the fieldtags are needed to keep case from bouncing around
 	Item             string          `json:"item"`
-                  Itemid          string          `json:"itemid"`
 	Distid          string           `json:"distid"`     
-	PurchDate   string           `json:"PurchDate"`  
+	PurchDate   string           `json:"PurchDate"`
+                  Retid        string              `json:"Retid"` 
 }
 
 // ============================================================================================================================
@@ -47,6 +64,21 @@ type Manufacturer struct {
                   ManDate      string           `jason:"mandate"`
 	Quality         string           `json:"quality"`     
 	Ndays          string           `json:"ndays"`  
+                  SellDate     string             `json:"selldate"`
+                  Distid          string           `json:"Distid"`
+}
+// ============================================================================================================================
+//  Distributor Definitions
+// ============================================================================================================================
+type Distributor struct {
+	ObjectType string        `json:"docType"` //field for couchdb
+                  Distid          string           `json:"distid"`	
+	Item             string          `json:"item"`
+                  Manid          string            `json:"manid"`
+                  Retid          string           `json:"retid"` 
+                  ExpDate      string           `jason:"expdate"`	    
+	DPurchDate   string           `json:"dpurchdate"`  
+                  SellDate   string           `json:"SellDate"`  
 }
 // ============================================================================================================================
 // Main
@@ -83,6 +115,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
                   }
                   if function == "CreateRetailerDB" {
 		return t.CreateRetailerDB(stub, args)
+                  }
+                   if function == "CreateDistributorDB" {
+		return t.CreateDistributorDB(stub, args)
                   }
 	
                   if function == "CreateManDB" {
@@ -145,23 +180,63 @@ func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, arg
                   var retailkey string
 	
 
-	if len(args) != 5 {
+	if len(args) != 4 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
 	}
                    
                    var retail Retailer
                    retail.ObjectType  = "retailer_detail"
-                   retail.Invno  = args[0]
-                   retail.Item  = args[1]
-                   retail.Itemid = args[2]
+                   retail.Invno  = args[1]
+                  retail.Retid = args[0]
+                   retail.Item  = args[2]
                    retail.Distid = args[3]
-                   retail.PurchDate = args[4]
+                   retail.PurchDate = "2017-05-12 15:04:05"
                    
                 retailkey = retail.Invno + retail.Item
 
                   retailAsBytes,_  :=  json.Marshal(retail) 
 
                    err = stub.PutState(retailkey, retailAsBytes)
+
+                   if err != nil {
+			
+                    return nil, err
+	
+                    }
+	return nil, nil
+}
+// CreateDistributorDB
+func (t *SimpleChaincode) CreateDistributorDB(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+                  
+	
+
+	if len(args) != 4 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
+	}
+                   
+                   var dist Distributor
+                   dist.ObjectType  = "Distributor_detail"
+                   dist.Distid  = args[0]
+                   dist.Item  = args[1]
+                   dist.Manid = args[2]
+                   dist.Retid = args[3]
+
+              
+
+                   dist.ExpDate =  "2017-05-17 15:04:05"
+
+                
+
+                   dist.DPurchDate = "2017-05-10 15:04:05"
+
+                    dist.SellDate = "2017-05-12 15:04:05"
+                   
+
+                  distAsBytes,_  :=  json.Marshal(dist) 
+
+                   err = stub.PutState(dist.Distid+dist.Retid+dist.Item+ dist.SellDate, distAsBytes)
 
                    if err != nil {
 			
@@ -178,7 +253,7 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                   var mankey string
 	
 
-	if len(args) != 2 {
+	if len(args) != 3 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
 	}
                    
@@ -186,6 +261,8 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                    manf.ObjectType  = "Manufacturer_detail"
                    manf.Manid = "M001"
                    manf.Itemid = args[0]
+
+                   manf.SellDate = "2017-05-10 15:04:05"
 
                     if manf.Itemid ==  "1" {
                    manf.Item  = "Plain Bread"
@@ -208,9 +285,9 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
                    manf.Ndays = "5"
                    }
                    
-                 
+                 manf.Distid = args[2]
                    
-                mankey = manf.Manid + manf.Itemid
+                mankey = manf.Manid + manf.Distid+manf.Item+manf.SellDate
 
                   manfAsBytes,_  :=  json.Marshal(manf) 
 
@@ -225,29 +302,72 @@ func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []s
 }
 // read - query function to read key/value pair
 func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,) ([]byte,error) {
-	var key,jsonResp string
+	var key,key2,key3,key4,jsonResp string
 	var err error                    
 	if len(args) != 1 {
 		return nil,errors.New("Incorrect number of arguments. Expecting name of the key to query")
 	}
 
                    
-                  
+                  var custr Customer
+                  var retr Retailer 
+                  var distr Distributor
+                  var manfr Manufacturer
+                    
+         
+                 var response Response
+              
+                   
           
 	key = args[0]
                                      
                 
 	valuex,err := stub.GetState(key)
 
-                   
+                  json.Unmarshal(valuex,&custr)
+ 
+                   key2 = custr.Invno+custr.Item
 
-               
+                  valuey,err := stub.GetState(key2)
+                   
+                   json.Unmarshal(valuey,&retr)
+                    
+                  key3=retr.Distid+retr.Retid+retr.Item+ retr.PurchDate
+                   
+                  valuez,err := stub.GetState(key3)
+                   json.Unmarshal(valuez,&distr)
+                   
+                   key4 = distr.Manid + distr.Distid+distr.Item+distr.DPurchDate
+
+
+                   valuezz,err := stub.GetState(key4)
+                   json.Unmarshal(valuezz,&manfr)
+
+                   response.Invno  =          custr.Invno
+                  
+	 response.Item         =     custr.Item
+                   response.Retid          =   distr.Retid
+                   response.PurchDate    =  retr.PurchDate
+	 response.Distid              = distr.Distid
+                   response.DPurchDate    = distr.DPurchDate
+	 response.ExpDate       = distr.ExpDate
+                  response.Manid         =  manfr.Manid
+                  response.ManDate       = manfr.ManDate
+	response.Quality             = manfr.Quality
+
+                  
+                    resAsBytes,_  :=  json.Marshal(response) 
+                  
+                  
+                 
+
+                   err = stub.PutState(response.Invno+response.ManDate, resAsBytes)
           
 	if err != nil {
 		jsonResp = "{\"Error\":\"Failed to get state for " + key+ "\"}"
 		return nil, errors.New(jsonResp)
 	}
                           
-	return valuex,nil
+	return resAsBytes,nil
                              
 }
