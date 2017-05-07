@@ -1,6 +1,7 @@
 package main
 
 import (
+                 "time"
 	"errors"
 	"fmt"
                   "encoding/json"
@@ -34,6 +35,19 @@ type Retailer struct {
 	Distid          string           `json:"distid"`     
 	PurchDate   string           `json:"PurchDate"`  
 }
+
+// ============================================================================================================================
+//  Manufacture Definitions
+// ============================================================================================================================
+type Manufacturer struct {
+	ObjectType string        `json:"docType"` //field for couchdb
+                  Manid         string          `jason:"manid"`	
+	Item             string          `json:"item"`
+                  Itemid          string          `json:"itemid"`
+                  ManDate      string           `jason:"mandate"`
+	Quality         string           `json:"quality"`     
+	Ndays          string           `json:"ndays"`  
+}
 // ============================================================================================================================
 // Main
 // ============================================================================================================================
@@ -63,10 +77,16 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	// Handle different functions
 	if function == "init" {
 		return t.Init(stub, "init", args)
-	} else if function == "write" {
+                  }
+	if function == "write" {
 		return t.write(stub, args)
-                  } else if function == "CreateRetailerDB" {
+                  }
+                  if function == "CreateRetailerDB" {
 		return t.CreateRetailerDB(stub, args)
+                  }
+	
+                  if function == "CreateManDB" {
+		return t.CreateManDB(stub, args)
 	}
 	fmt.Println("invoke did not find func: " + function)
 
@@ -150,15 +170,68 @@ func (t *SimpleChaincode) CreateRetailerDB(stub shim.ChaincodeStubInterface, arg
                     }
 	return nil, nil
 }
+
+// CreateManDB
+func (t *SimpleChaincode) CreateManDB(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+                  var mankey string
+	
+
+	if len(args) != 2 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 2. name of the key and value to set")
+	}
+                   
+                   var manf Manufacturer
+                   manf.ObjectType  = "Manufacturer_detail"
+                   manf.Manid = "M001"
+                   manf.Itemid = args[0]
+
+                    if manf.Itemid ==  "1" {
+                   manf.Item  = "Plain Bread"
+                   } else if manf.Itemid == "2" {
+                    manf.Item = "Wheat Bread"
+                   }else {
+                   manf.Item = "Default"
+                   }
+
+                   c := time.Now().Local()
+
+                   manf.ManDate =  c.String()
+                   manf.Quality = args[1]
+                   
+                    if manf.Quality==  "A" {
+                   manf.Ndays  = "10"
+                   } else if manf.Quality == "B" {
+                    manf.Ndays = "7"
+                   } else  {
+                   manf.Ndays = "5"
+                   }
+                   
+                 
+                   
+                mankey = manf.Manid + manf.Item
+
+                  manfAsBytes,_  :=  json.Marshal(manf) 
+
+                   err = stub.PutState(mankey, manfAsBytes)
+
+                   if err != nil {
+			
+                    return nil, err
+	
+                    }
+	return nil, nil
+}
 // read - query function to read key/value pair
 func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,) ([]byte,error) {
-	var key,key2,jsonResp string
+	var key,jsonResp string
 	var err error                    
 	if len(args) != 1 {
 		return nil,errors.New("Incorrect number of arguments. Expecting name of the key to query")
 	}
 
-                  var cust Customer
+                   
                   
           
 	key = args[0]
@@ -166,11 +239,7 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,)
                 
 	valuex,err := stub.GetState(key)
 
-                  json.Unmarshal(valuex,&cust)
-
-                 key2 = cust.Invno + cust.Item 
-
-                 valuey,err := stub.GetState(key2)
+                   
 
                
           
@@ -179,6 +248,6 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string,)
 		return nil, errors.New(jsonResp)
 	}
                           
-	return valuey,nil
+	return valuex,nil
                              
 }
